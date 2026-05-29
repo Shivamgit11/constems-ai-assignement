@@ -1,11 +1,11 @@
 
 import "./App.css";
-import TableFunction from "./Components/TableFunc";
+import CsvViewere from "./Pages/CsvViewer";
 
 function App() {
   return (
     <>
-      <TableFunction />
+     <CsvViewere />
     </>
   );
 }

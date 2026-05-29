@@ -1,0 +1,20 @@
+{
+  "header": "Constems-Csv-Viewer",
+  "LayoutColors": {
+    "pageBg": "#0A0F1E",
+    "cardBg": "#0D1526",
+    "cardAlt": "#111D35",
+    "cardHover": "rgba(0,198,255,0.06)",
+    "border": "rgba(0,198,255,0.18)",
+    "borderAct": "rgba(0,198,255,0.45)",
+    "borderSub": "rgba(255,255,255,0.07)",
+    "cyan": "#00C6FF",
+    "cyanDim": "rgba(0,198,255,0.65)",
+    "blue": "#0072FF",
+    "textH": "#FFFFFF",
+    "textBody": "#B8CEDD",
+    "textLabel": "#6A8AA8",
+    "textMuted": "#3A5570",
+    "fontMain": "'Poppins', 'Segoe UI', sans-serif"
+  }
+}
