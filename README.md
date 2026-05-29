@@ -1,17 +1,56 @@
-# React + Vite
+CSV Viewer App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern and responsive CSV Viewer built with React, Tailwind CSS, and PapaParse.
 
-Currently, two official plugins are available:
+This application allows users to:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# constems-ai-assignement
+Upload CSV files
+View CSV data in a clean table
+Filter data by column values
+Sort columns ascending/descending
+Paginate large datasets
+Drag & drop CSV uploads
+Explore dataset statistics instantly
+Features
+CSV Upload
+Upload .csv files directly
+Drag & drop support
+Instant parsing using PapaParse
+Data Table
+Dynamic columns from CSV headers
+Responsive table layout
+Horizontal scrolling for large datasets
+Filtering
+Multi-select filtering per column
+Active filter counter
+Clear all filters functionality
+Sorting
+Ascending/Descending sorting
+Supports:
+Text sorting
+Numeric sorting
+Pagination
+Efficient pagination
+Page navigation controls
+Displays row counts
+UI
+Dark modern dashboard style
+Fully responsive
+Tailwind CSS based styling
+Tech Stack
+React.js
+Tailwind CSS
+PapaParse
+Folder Structure
+src/
+│
+├── Components/
+│   ├── ColumnFilter.jsx
+│   ├── PgBtn.jsx
+│   └── StatCard.jsx
+│
+├── Pages/
+│   └── CsvViewere.jsx
+│
+├── App.jsx
+└── main.jsx
