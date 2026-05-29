@@ -6,7 +6,25 @@ import PgBtn from "../Components/PgBtn";
 
 const PAGE_SIZE = 15;
 
-const CsvViewere = () => {
+const T = {
+  pageBg: "#0A0F1E",
+  cardBg: "#0D1526",
+  cardAlt: "#111D35",
+  cardHover: "rgba(0,198,255,0.06)",
+  border: "rgba(0,198,255,0.18)",
+  borderAct: "rgba(0,198,255,0.45)",
+  borderSub: "rgba(255,255,255,0.07)",
+  cyan: "#00C6FF",
+  cyanDim: "rgba(0,198,255,0.65)",
+  blue: "#0072FF",
+  textH: "#FFFFFF",
+  textBody: "#B8CEDD",
+  textLabel: "#6A8AA8",
+  textMuted: "#3A5570",
+  fontMain: "'Poppins', 'Segoe UI', sans-serif",
+};
+
+const  CsvViewere = () =>  {
   const [data, setData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [filters, setFilters] = useState({});
@@ -15,14 +33,11 @@ const CsvViewere = () => {
   const [page, setPage] = useState(1);
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState("");
-
   const inputRef = useRef();
 
   const parseFile = (file) => {
     if (!file || !file.name.endsWith(".csv")) return;
-
     setFileName(file.name);
-
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -43,22 +58,16 @@ const CsvViewere = () => {
   }, []);
 
   const handleSort = (col) => {
-    if (sortCol === col) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
+    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
       setSortCol(col);
       setSortDir("asc");
     }
-
     setPage(1);
   };
 
   const handleFilter = (col, vals) => {
-    setFilters((f) => ({
-      ...f,
-      [col]: vals,
-    }));
-
+    setFilters((f) => ({ ...f, [col]: vals }));
     setPage(1);
   };
 
@@ -66,55 +75,41 @@ const CsvViewere = () => {
     setFilters({});
     setPage(1);
   };
-
   const hasFilters = Object.values(filters).some((v) => v?.length > 0);
-
   const activeCount = Object.values(filters).reduce(
     (a, v) => a + (v?.length || 0),
-    0
+    0,
   );
 
   const filtered = data.filter((row) =>
     columns.every((col) => {
       const f = filters[col];
       return !f?.length || f.includes(String(row[col] ?? ""));
-    })
+    }),
   );
 
   const sorted = sortCol
     ? [...filtered].sort((a, b) => {
-        const av = a[sortCol] ?? "";
-        const bv = b[sortCol] ?? "";
-
-        const an = parseFloat(av);
-        const bn = parseFloat(bv);
-
+        const av = a[sortCol] ?? "",
+          bv = b[sortCol] ?? "";
+        const an = parseFloat(av),
+          bn = parseFloat(bv);
         const cmp =
           !isNaN(an) && !isNaN(bn)
             ? an - bn
             : String(av).localeCompare(String(bv));
-
         return sortDir === "asc" ? cmp : -cmp;
       })
     : filtered;
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-
-  const paginated = sorted.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const pageNums = () => {
-    if (totalPages <= 6) {
+    if (totalPages <= 6)
       return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-
-    if (page <= 3) {
-      return [1, 2, 3, 4, "…", totalPages];
-    }
-
-    if (page >= totalPages - 2) {
+    if (page <= 3) return [1, 2, 3, 4, "…", totalPages];
+    if (page >= totalPages - 2)
       return [
         1,
         "…",
@@ -123,264 +118,577 @@ const CsvViewere = () => {
         totalPages - 1,
         totalPages,
       ];
-    }
-
     return [1, "…", page - 1, page, page + 1, "…", totalPages];
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] px-8 py-10 font-[Poppins] text-[#B8CEDD]">
-      {/* Header */}
-      <div className="mb-9">
-        <div className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white">
-          <span className="inline-block h-[2px] w-7 rounded bg-[#00C6FF]" />
-          Constems-Csv Viewer
-        </div>
+    <>
+      {/* Google Fonts — Poppins */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0A0F1E; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0A0F1E; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,198,255,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,198,255,0.55); }
+        input::placeholder { color: #3A5570; }
+      `}</style>
 
-        <h1 className="mb-2.5 text-[42px] font-extrabold leading-tight tracking-[-0.03em] text-!white">
-          CSV Viewer
-        </h1>
-
-        <p className="text-base leading-7 text-[#B8CEDD]">
-          Upload any CSV file to explore, filter by multiple values per
-          column, and sort your data instantly.
-        </p>
-      </div>
-
-      {/* Upload */}
       <div
-        onClick={() => inputRef.current.click()}
-        onDrop={onDrop}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
+        style={{
+          minHeight: "100vh",
+          background: T.pageBg,
+          fontFamily: T.fontMain,
+          padding: "40px 32px",
+          color: T.textBody,
         }}
-        onDragLeave={() => setDragging(false)}
-        className={`relative mb-7 cursor-pointer overflow-hidden rounded-[20px] border-2 border-dashed px-8 py-12 text-center transition-all ${
-          dragging
-            ? "border-[#00C6FF] bg-[rgba(0,198,255,0.06)]"
-            : "border-[rgba(0,198,255,0.45)] bg-[#0D1526]"
-        }`}
       >
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(0,198,255,0.05)_0%,transparent_70%)]" />
-
-        <div className="mb-3 text-[40px] leading-none text-[#00C6FF]">
-          ⬆
+        {/* ── Eyebrow + Title ── */}
+        <div style={{ marginBottom: 36 }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+              color: T.cyan,
+              marginBottom: 10,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                width: 28,
+                height: 2,
+                background: T.cyan,
+                borderRadius: 2,
+              }}
+            />
+            Constems-Csv Viewer
+          </div>
+          <h1
+            style={{
+              fontSize: 42,
+              fontWeight: 800,
+              color: T.textH,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+              marginBottom: 10,
+            }}
+          >
+            CSV Viewer
+          </h1>
+          <p
+            style={{
+              fontSize: 16,
+              fontWeight: 400,
+              color: T.textBody,
+              lineHeight: 1.7,
+            }}
+          >
+            Upload any CSV file to explore, filter by multiple values per
+            column, and sort your data instantly.
+          </p>
         </div>
 
-        <p className="mb-1.5 text-lg font-semibold text-white">
-          {fileName ? `Loaded: ${fileName}` : "Drop your CSV file here"}
-        </p>
-
-        <p className="mb-5 text-sm text-[#6A8AA8]">
-          Supports .csv files with header rows
-        </p>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            inputRef.current.click();
+        {/* ── Drop zone ── */}
+        <div
+          onClick={() => inputRef.current.click()}
+          onDrop={onDrop}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
           }}
-          className="rounded-[10px] bg-gradient-to-br from-[#00C6FF] to-[#0072FF] px-7 py-3 text-sm font-bold tracking-[0.06em] text-white transition-opacity hover:opacity-90"
+          onDragLeave={() => setDragging(false)}
+          style={{
+            border: `2px dashed ${dragging ? T.cyan : T.borderAct}`,
+            borderRadius: 20,
+            padding: "48px 32px",
+            textAlign: "center",
+            cursor: "pointer",
+            marginBottom: 28,
+            transition: "all 0.2s",
+            background: dragging ? "rgba(0,198,255,0.06)" : T.cardBg,
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
-          Browse File
-        </button>
+          {/* subtle radial glow */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%,-50%)",
+              width: 300,
+              height: 300,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(0,198,255,0.05) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
 
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv"
-          className="hidden"
-          onChange={(e) => {
-            parseFile(e.target.files[0]);
-            e.target.value = "";
-          }}
-        />
-      </div>
-
-      {data.length > 0 && (
-        <>
-          {/* Stats */}
-          <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3.5">
-            <StatCard
-              label="Total rows"
-              value={data.length.toLocaleString()}
-              accent
-            />
-
-            <StatCard label="Columns" value={columns.length} />
-
-            <StatCard
-              label="Filtered"
-              value={filtered.length.toLocaleString()}
-            />
-
-            <StatCard label="Pages" value={totalPages} />
+          <div
+            style={{
+              fontSize: 40,
+              color: T.cyan,
+              marginBottom: 12,
+              lineHeight: 1,
+            }}
+          >
+            ⬆
           </div>
+          <p
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: T.textH,
+              marginBottom: 6,
+            }}
+          >
+            {fileName ? `Loaded: ${fileName}` : "Drop your CSV file here"}
+          </p>
+          <p style={{ fontSize: 14, color: T.textLabel, marginBottom: 20 }}>
+            Supports .csv files with header rows
+          </p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              inputRef.current.click();
+            }}
+            style={{
+              background: `linear-gradient(135deg, ${T.cyan}, ${T.blue})`,
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              padding: "11px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              cursor: "pointer",
+              fontFamily: T.fontMain,
+              transition: "opacity 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          >
+            Browse File
+          </button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              parseFile(e.target.files[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
 
-          {/* Filters */}
-          <div className="mb-6 rounded-[20px] border border-[rgba(0,198,255,0.18)] bg-[#0D1526] px-7 py-6">
-            <div className="mb-[18px] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-[#00C6FF]">
-                  Filter columns
-                </span>
+        {data.length > 0 && (
+          <>
+            {/* ── Stats row ── */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                gap: 14,
+                marginBottom: 24,
+              }}
+            >
+              <StatCard
+                label="Total rows"
+                value={data.length.toLocaleString()}
+                accent
+              />
+              <StatCard label="Columns" value={columns.length} />
+              <StatCard
+                label="Filtered"
+                value={filtered.length.toLocaleString()}
+              />
+              <StatCard label="Pages" value={totalPages} />
+            </div>
 
-                {activeCount > 0 && (
-                  <span className="rounded-[20px] bg-[#00C6FF] px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] text-[#0A0F1E]">
-                    {activeCount} active
+            {/* ── Filter panel ── */}
+            <div
+              style={{
+                background: T.cardBg,
+                border: `1px solid ${T.border}`,
+                borderRadius: 20,
+                padding: "24px 28px",
+                marginBottom: 24,
+              }}
+            >
+              {/* Header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 18,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: T.cyan,
+                    }}
+                  >
+                    Filter columns
                   </span>
-                )}
-              </div>
-
-              {hasFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="rounded-lg border border-[rgba(0,198,255,0.45)] px-3.5 py-1.5 text-xs font-medium text-[#6A8AA8] transition-all hover:border-[#00C6FF] hover:text-white"
-                >
-                  ✕ Clear all
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3">
-              {columns.map((col) => (
-                <ColumnFilter
-                  key={col}
-                  col={col}
-                  data={data}
-                  selected={filters[col] || []}
-                  onChange={(vals) => handleFilter(col, vals)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-hidden rounded-[20px] border border-[rgba(0,198,255,0.18)] bg-[#0D1526]">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[13px]">
-                <thead>
-                  <tr className="bg-[#060B16]">
-                    {columns.map((col) => (
-                      <th
-                        key={col}
-                        onClick={() => handleSort(col)}
-                        className={`cursor-pointer select-none whitespace-nowrap border-b border-r border-[rgba(0,198,255,0.18)] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] transition-all ${
-                          sortCol === col
-                            ? "bg-[rgba(0,198,255,0.1)] text-white"
-                            : "text-[rgba(0,198,255,0.65)] hover:bg-[rgba(255,255,255,0.04)]"
-                        }`}
-                      >
-                        {col}
-
-                        <span className="ml-1.5 text-[10px] opacity-45">
-                          {sortCol === col
-                            ? sortDir === "asc"
-                              ? "↑"
-                              : "↓"
-                            : "↕"}
-                        </span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {paginated.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={columns.length}
-                        className="p-12 text-center text-sm italic text-[#3A5570]"
-                      >
-                        No rows match your filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginated.map((row, ri) => (
-                      <tr
-                        key={ri}
-                        className={`border-b border-[rgba(255,255,255,0.07)] transition-colors hover:bg-[rgba(0,198,255,0.06)] ${
-                          ri % 2 === 1
-                            ? "bg-[#111D35]"
-                            : "bg-[#0D1526]"
-                        }`}
-                      >
-                        {columns.map((col, ci) => (
-                          <td
-                            key={ci}
-                            title={String(row[col] ?? "")}
-                            className="max-w-[200px] overflow-hidden whitespace-nowrap border-r border-[rgba(255,255,255,0.07)] px-4 py-[11px] text-[13px] leading-relaxed text-[#B8CEDD] text-ellipsis"
-                          >
-                            {row[col] ?? ""}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[rgba(0,198,255,0.18)] bg-[#060B16] px-5 py-3">
-              <span className="text-[13px] font-medium text-[#6A8AA8]">
-                {sorted.length === 0
-                  ? "0 rows"
-                  : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(
-                      page * PAGE_SIZE,
-                      sorted.length
-                    )} of ${sorted.length.toLocaleString()} rows`}
-              </span>
-
-              <div className="flex items-center gap-1">
-                <PgBtn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  ‹
-                </PgBtn>
-
-                {pageNums().map((n, i) =>
-                  n === "…" ? (
+                  {activeCount > 0 && (
                     <span
-                      key={"e" + i}
-                      className="px-1 text-xs text-[#3A5570]"
+                      style={{
+                        background: T.cyan,
+                        color: "#0A0F1E",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        borderRadius: 20,
+                        padding: "2px 10px",
+                        letterSpacing: "0.04em",
+                      }}
                     >
-                      …
+                      {activeCount} active
                     </span>
-                  ) : (
-                    <PgBtn
-                      key={n}
-                      onClick={() => setPage(n)}
-                      active={page === n}
-                    >
-                      {n}
-                    </PgBtn>
-                  )
+                  )}
+                </div>
+                {hasFilters && (
+                  <button
+                    onClick={clearFilters}
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${T.borderAct}`,
+                      borderRadius: 8,
+                      padding: "5px 14px",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      color: T.textLabel,
+                      fontFamily: T.fontMain,
+                      fontWeight: 500,
+                      transition: "all 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = T.textH;
+                      e.currentTarget.style.borderColor = T.cyan;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = T.textLabel;
+                      e.currentTarget.style.borderColor = T.borderAct;
+                    }}
+                  >
+                    ✕ Clear all
+                  </button>
                 )}
+              </div>
 
-                <PgBtn
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={page === totalPages}
+              {/* Grid of dropdowns */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {columns.map((col) => (
+                  <ColumnFilter
+                    key={col}
+                    col={col}
+                    data={data}
+                    selected={filters[col] || []}
+                    onChange={(vals) => handleFilter(col, vals)}
+                  />
+                ))}
+              </div>
+
+              {/* Active tags */}
+              {/* {hasFilters && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
                 >
-                  ›
-                </PgBtn>
+                  {columns.flatMap((col) =>
+                    (filters[col] || []).map((val) => (
+                      <span
+                        key={`${col}:${val}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          background: "rgba(0,198,255,0.08)",
+                          border: `1px solid ${T.borderAct}`,
+                          borderRadius: 8,
+                          padding: "4px 10px",
+                          fontSize: 12,
+                          fontWeight: 400,
+                        }}
+                      >
+                        <span style={{ color: T.textMuted, fontSize: 11 }}>
+                          {col}:
+                        </span>
+                        <span
+                          style={{
+                            color: T.cyan,
+                            fontWeight: 600,
+                            maxWidth: 120,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {val}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleFilter(
+                              col,
+                              (filters[col] || []).filter((v) => v !== val),
+                            )
+                          }
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: T.textMuted,
+                            padding: 0,
+                            lineHeight: 1,
+                            fontSize: 12,
+                            fontFamily: T.fontMain,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )),
+                  )}
+                </div>
+              )} */}
+            </div>
+
+            {/* ── Table ── */}
+            <div
+              style={{
+                background: T.cardBg,
+                border: `1px solid ${T.border}`,
+                borderRadius: 20,
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                    fontFamily: T.fontMain,
+                  }}
+                >
+                  <thead>
+                    <tr style={{ background: "#060B16" }}>
+                      {columns.map((col) => (
+                        <th
+                          key={col}
+                          onClick={() => handleSort(col)}
+                          style={{
+                            padding: "12px 16px",
+                            textAlign: "left",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: "0.12em",
+                            textTransform: "uppercase",
+                            whiteSpace: "nowrap",
+                            cursor: "pointer",
+                            userSelect: "none",
+                            borderRight: `1px solid ${T.borderSub}`,
+                            borderBottom: `1px solid ${T.border}`,
+                            color: sortCol === col ? T.textH : T.cyanDim,
+                            background:
+                              sortCol === col
+                                ? "rgba(0,198,255,0.1)"
+                                : "transparent",
+                            transition: "all 0.15s",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (sortCol !== col)
+                              e.currentTarget.style.background =
+                                "rgba(255,255,255,0.04)";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (sortCol !== col)
+                              e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          {col}
+                          <span
+                            style={{
+                              marginLeft: 5,
+                              opacity: 0.45,
+                              fontSize: 10,
+                            }}
+                          >
+                            {sortCol === col
+                              ? sortDir === "asc"
+                                ? "↑"
+                                : "↓"
+                              : "↕"}
+                          </span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={columns.length}
+                          style={{
+                            padding: "3rem",
+                            textAlign: "center",
+                            color: T.textMuted,
+                            fontSize: 14,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          No rows match your filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginated.map((row, ri) => (
+                        <tr
+                          key={ri}
+                          style={{
+                            background: ri % 2 === 1 ? T.cardAlt : T.cardBg,
+                            borderBottom: `1px solid ${T.borderSub}`,
+                            transition: "background 0.1s",
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = T.cardHover)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background =
+                              ri % 2 === 1 ? T.cardAlt : T.cardBg)
+                          }
+                        >
+                          {columns.map((col, ci) => (
+                            <td
+                              key={ci}
+                              title={String(row[col] ?? "")}
+                              style={{
+                                padding: "11px 16px",
+                                fontSize: 13,
+                                fontWeight: 400,
+                                color: T.textBody,
+                                lineHeight: 1.5,
+                                maxWidth: 200,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                borderRight: `1px solid ${T.borderSub}`,
+                              }}
+                            >
+                              {row[col] ?? ""}
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination footer */}
+              <div
+                style={{
+                  padding: "12px 20px",
+                  borderTop: `1px solid ${T.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  background: "#060B16",
+                }}
+              >
+                <span
+                  style={{ fontSize: 13, color: T.textLabel, fontWeight: 500 }}
+                >
+                  {sorted.length === 0
+                    ? "0 rows"
+                    : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, sorted.length)} of ${sorted.length.toLocaleString()} rows`}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  {/* Prev */}
+                  <PgBtn
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    ‹
+                  </PgBtn>
+                  {pageNums().map((n, i) =>
+                    n === "…" ? (
+                      <span
+                        key={"e" + i}
+                        style={{
+                          color: T.textMuted,
+                          fontSize: 12,
+                          padding: "0 3px",
+                        }}
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <PgBtn
+                        key={n}
+                        onClick={() => setPage(n)}
+                        active={page === n}
+                      >
+                        {n}
+                      </PgBtn>
+                    ),
+                  )}
+                  {/* Next */}
+                  <PgBtn
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    ›
+                  </PgBtn>
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
 
-      {data.length === 0 && (
-        <p className="mt-6 text-center text-sm italic leading-7 text-[#3A5570]">
-          No data loaded yet — upload a CSV to get started.
-        </p>
-      )}
-    </div>
+        {data.length === 0 && (
+          <p
+            style={{
+              textAlign: "center",
+              color: T.textMuted,
+              fontStyle: "italic",
+              fontSize: 14,
+              marginTop: 24,
+              lineHeight: 1.7,
+            }}
+          >
+            No data loaded yet — upload a CSV to get started.
+          </p>
+        )}
+      </div>
+    </>
   );
-};
+}
 
 export default CsvViewere;
